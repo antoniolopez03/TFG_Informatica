@@ -8,8 +8,8 @@ plugins {
 android {
     namespace = "com.example.tfg"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = "27.0.12077973"  // ← CAMBIA ESTA LÍNEA
-
+    ndkVersion = "27.0.12077973"  
+    
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -21,17 +21,23 @@ android {
 
     defaultConfig {
         applicationId = "com.example.tfg"
-        minSdk = flutter.minSdkVersion
+        // minSdk = flutter.minSdkVersion
+        minSdk = 21 
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+    }
+
+    aaptOptions {
+        noCompress("tflite")
+        noCompress("lite")
     }
 
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("debug")
         }
-    }
+    }    
 }
 
 flutter {
