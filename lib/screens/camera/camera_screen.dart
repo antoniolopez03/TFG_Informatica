@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../services/classifier_service.dart';  // ← Importar nuestro servicio
+import '../../services/classifier_service.dart';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
@@ -11,42 +11,41 @@ class CameraScreen extends StatefulWidget {
 }
 
 class _CameraScreenState extends State<CameraScreen> {
-  File? _image;  // La imagen seleccionada
+  File? _image;
   final ImagePicker _picker = ImagePicker();
-  final ClassifierService _classifier = ClassifierService();  // ← Nuestro servicio
+  final ClassifierService _classifier = ClassifierService();
   
-  bool _isClassifying = false;  // ¿Está clasificando ahora?
-  List<ClassificationResult>? _results;  // Los resultados de los 3 modelos
-  String? _errorMessage;  // Si hay algún error
+  bool _isClassifying = false;
+  ClassificationResult? _result;
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-    _loadModels();  // Cargar modelos al iniciar
+    _loadModel();
   }
 
-  // Cargar los modelos cuando abre la pantalla
-  Future<void> _loadModels() async {
+  Future<void> _loadModel() async {
     try {
-      print('🔄 Iniciando carga de modelos...');
+      print('🔄 Iniciando carga del modelo...');
       await _classifier.loadModels();
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('✅ Modelos cargados correctamente'),
+            content: Text('✅ Modelo cargado correctamente'),
             backgroundColor: Colors.green,
             duration: Duration(seconds: 2),
           ),
         );
       }
-      print('✅ Modelos listos para usar');
+      print('✅ Modelo listo para usar');
     } catch (e) {
       print('❌ Error al cargar: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('❌ Error al cargar modelos: $e'),
+            content: Text('❌ Error al cargar modelo: $e'),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 4),
           ),
@@ -55,7 +54,6 @@ class _CameraScreenState extends State<CameraScreen> {
     }
   }
 
-  // Seleccionar imagen de galería o cámara
   Future<void> _pickImage(ImageSource source) async {
     try {
       final XFile? pickedFile = await _picker.pickImage(source: source);
@@ -63,7 +61,7 @@ class _CameraScreenState extends State<CameraScreen> {
       if (pickedFile != null) {
         setState(() {
           _image = File(pickedFile.path);
-          _results = null;  // Limpiar resultados anteriores
+          _result = null;
           _errorMessage = null;
         });
         print('📸 Imagen seleccionada: ${pickedFile.path}');
@@ -78,7 +76,6 @@ class _CameraScreenState extends State<CameraScreen> {
     }
   }
 
-  // ¡CLASIFICAR LA IMAGEN!
   Future<void> _classifyImage() async {
     if (_image == null) return;
 
@@ -90,15 +87,14 @@ class _CameraScreenState extends State<CameraScreen> {
     try {
       print('🚀 Iniciando clasificación...');
       
-      // Clasificar con los 3 modelos
-      final results = await _classifier.classifyWithAllModels(_image!);
+      final result = await _classifier.classifyImage(_image!);
       
       setState(() {
-        _results = results;
+        _result = result;
         _isClassifying = false;
       });
       
-      print('✅ Clasificación completada: ${results.length} resultados');
+      print('✅ Clasificación completada');
     } catch (e) {
       print('❌ Error en clasificación: $e');
       setState(() {
@@ -108,43 +104,19 @@ class _CameraScreenState extends State<CameraScreen> {
     }
   }
 
-  // Obtener nombre legible del modelo
-  String _getModelName(ModelType modelType) {
-    switch (modelType) {
-      case ModelType.efficientNetLite0:
-        return 'EfficientNet Lite0';
-      case ModelType.mobileNetV2:
-        return 'MobileNet V2';
-      case ModelType.mobileNetV3:
-        return 'MobileNet V3';
-    }
-  }
-
-  // Obtener color para cada modelo
-  Color _getModelColor(ModelType modelType) {
-    switch (modelType) {
-      case ModelType.efficientNetLite0:
-        return Colors.purple;
-      case ModelType.mobileNetV2:
-        return Colors.blue;
-      case ModelType.mobileNetV3:
-        return Colors.teal;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Clasificador de Imágenes'),
         centerTitle: true,
-        backgroundColor: Colors.blue[700],
+        backgroundColor: Colors.teal[700],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // SECCIÓN 1: MOSTRAR LA IMAGEN
+            // MOSTRAR LA IMAGEN
             Container(
               height: 300,
               width: double.infinity,
@@ -174,7 +146,7 @@ class _CameraScreenState extends State<CameraScreen> {
             
             const SizedBox(height: 20),
             
-            // SECCIÓN 2: BOTONES DE GALERÍA Y CÁMARA
+            // BOTONES DE GALERÍA Y CÁMARA
             Row(
               children: [
                 Expanded(
@@ -184,7 +156,7 @@ class _CameraScreenState extends State<CameraScreen> {
                     label: const Text('Galería'),
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 15),
-                      backgroundColor: Colors.blue[600],
+                      backgroundColor: Colors.teal[600],
                       foregroundColor: Colors.white,
                     ),
                   ),
@@ -197,7 +169,7 @@ class _CameraScreenState extends State<CameraScreen> {
                     label: const Text('Cámara'),
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 15),
-                      backgroundColor: Colors.blue[600],
+                      backgroundColor: Colors.teal[600],
                       foregroundColor: Colors.white,
                     ),
                   ),
@@ -207,7 +179,7 @@ class _CameraScreenState extends State<CameraScreen> {
             
             const SizedBox(height: 20),
             
-            // SECCIÓN 3: BOTÓN CLASIFICAR
+            // BOTÓN CLASIFICAR
             if (_image != null)
               SizedBox(
                 width: double.infinity,
@@ -236,7 +208,7 @@ class _CameraScreenState extends State<CameraScreen> {
                           ],
                         )
                       : const Text(
-                          'Clasificar con los 3 modelos',
+                          'Clasificar Imagen',
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                 ),
@@ -244,7 +216,7 @@ class _CameraScreenState extends State<CameraScreen> {
             
             const SizedBox(height: 30),
             
-            // SECCIÓN 4: MOSTRAR ERRORES
+            // MOSTRAR ERRORES
             if (_errorMessage != null)
               Container(
                 padding: const EdgeInsets.all(16),
@@ -266,21 +238,19 @@ class _CameraScreenState extends State<CameraScreen> {
                 ),
               ),
             
-            // SECCIÓN 5: MOSTRAR RESULTADOS
-            if (_results != null && _results!.isNotEmpty) ...[
+            // MOSTRAR RESULTADO
+            if (_result != null) ...[
               const Divider(thickness: 2),
               const SizedBox(height: 10),
               const Text(
-                '📊 Resultados de Clasificación',
+                '📊 Resultado de Clasificación',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 20),
-              
-              // Mostrar cada resultado en una tarjeta
-              ...(_results!.map((result) => _buildResultCard(result)).toList()),
+              _buildResultCard(_result!),
             ],
           ],
         ),
@@ -288,20 +258,17 @@ class _CameraScreenState extends State<CameraScreen> {
     );
   }
 
-  // Crear tarjeta bonita para cada resultado
   Widget _buildResultCard(ClassificationResult result) {
-    final modelColor = _getModelColor(result.modelUsed);
     final confidencePercentage = (result.confidence * 100).toStringAsFixed(1);
     
     return Card(
-      margin: const EdgeInsets.only(bottom: 16),
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           gradient: LinearGradient(
-            colors: [modelColor.withOpacity(0.1), Colors.white],
+            colors: [Colors.teal.withOpacity(0.1), Colors.white],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -311,16 +278,16 @@ class _CameraScreenState extends State<CameraScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Nombre del modelo con color
+              // Nombre del modelo
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: modelColor,
+                  color: Colors.teal,
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text(
-                  _getModelName(result.modelUsed),
-                  style: const TextStyle(
+                child: const Text(
+                  'MobileNet V3',
+                  style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
@@ -360,10 +327,10 @@ class _CameraScreenState extends State<CameraScreen> {
                       ),
                       Text(
                         '$confidencePercentage%',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: modelColor,
+                          color: Colors.teal,
                         ),
                       ),
                     ],
@@ -375,7 +342,7 @@ class _CameraScreenState extends State<CameraScreen> {
                       value: result.confidence,
                       minHeight: 10,
                       backgroundColor: Colors.grey[300],
-                      valueColor: AlwaysStoppedAnimation<Color>(modelColor),
+                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.teal),
                     ),
                   ),
                 ],
