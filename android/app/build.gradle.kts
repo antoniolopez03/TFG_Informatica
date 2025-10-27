@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.tfg"
+    namespace = "com.example.tfg_3"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"  
     
@@ -20,7 +20,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.tfg"
+        applicationId = "com.example.tfg_3"
         // minSdk = flutter.minSdkVersion
         minSdk = 21 
         targetSdk = flutter.targetSdkVersion
