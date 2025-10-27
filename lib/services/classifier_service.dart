@@ -14,7 +14,7 @@ class ClassificationResult {
 }
 
 class ClassifierService {
-  Interpreter? _mobileNetV3Interpreter;
+  Interpreter? _interpreter;
   List<String> _labels = [];
   static const int inputSize = 224;
 
@@ -24,14 +24,16 @@ class ClassifierService {
 
   Future<void> loadModels() async {
     try {
-      print('📦 Cargando modelo MobileNet V3...');
+      print('📦 Cargando modelo EfficientNet-V2...');
       await _loadLabels();
 
-      _mobileNetV3Interpreter = await Interpreter.fromAsset(
-        'assets/models/mobilenet_v3.tflite',
-        options: InterpreterOptions()..threads = 4,
+      _interpreter = await Interpreter.fromAsset(
+        'assets/models/2.tflite',
+        options: InterpreterOptions()
+          ..threads = 4
+          ..useNnApiForAndroid = true,
       );
-      print('✅ MobileNet V3 cargado correctamente');
+      print('✅ EfficientNet-V2 cargado correctamente');
     } catch (e) {
       print('❌ Error al cargar modelo: $e');
       rethrow;
@@ -45,7 +47,7 @@ class ClassifierService {
   }
 
   Future<ClassificationResult> classifyImage(File imageFile) async {
-    if (_mobileNetV3Interpreter == null) {
+    if (_interpreter == null) {
       throw Exception('Modelo no cargado. Llama a loadModels() primero.');
     }
 
@@ -58,7 +60,7 @@ class ClassifierService {
     final resized = img.copyResize(image, width: inputSize, height: inputSize);
 
     // Preparar input según tipo del modelo
-    final inputTensor = _mobileNetV3Interpreter!.getInputTensor(0);
+    final inputTensor = _interpreter!.getInputTensor(0);
     final inputType = inputTensor.type;
     
     Object input;
@@ -72,7 +74,7 @@ class ClassifierService {
     final output = List.filled(1 * _labels.length, 0.0).reshape([1, _labels.length]);
 
     // Ejecutar inferencia
-    _mobileNetV3Interpreter!.run(input, output);
+    _interpreter!.run(input, output);
 
     // Encontrar la clase con mayor probabilidad
     final probabilities = output[0] as List<double>;
@@ -135,9 +137,9 @@ class ClassifierService {
   }
 
   void dispose() {
-    _mobileNetV3Interpreter?.close();
-    _mobileNetV3Interpreter = null;
+    _interpreter?.close();
+    _interpreter = null;
   }
 
-  bool get isModelLoaded => _mobileNetV3Interpreter != null;
+  bool get isModelLoaded => _interpreter != null;
 }

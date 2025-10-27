@@ -286,7 +286,7 @@ class _CameraScreenState extends State<CameraScreen> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Text(
-                  'MobileNet V3',
+                  'EfficientNet V2',
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
