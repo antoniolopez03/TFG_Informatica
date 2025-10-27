@@ -24,16 +24,16 @@ class ClassifierService {
 
   Future<void> loadModels() async {
     try {
-      print('📦 Cargando modelo EfficientNet-V2...');
+      print('📦 Cargando modelo Clothing Classifier...');
       await _loadLabels();
 
       _interpreter = await Interpreter.fromAsset(
-        'assets/models/2.tflite',
+        'assets/models/clothing_classifier.tflite',
         options: InterpreterOptions()
           ..threads = 4
           ..useNnApiForAndroid = true,
       );
-      print('✅ EfficientNet-V2 cargado correctamente');
+      print('✅ Clothing Classifier cargado correctamente');
     } catch (e) {
       print('❌ Error al cargar modelo: $e');
       rethrow;

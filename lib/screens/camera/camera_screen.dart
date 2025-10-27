@@ -286,7 +286,7 @@ class _CameraScreenState extends State<CameraScreen> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Text(
-                  'EfficientNet V2',
+                  'Clothing Classifier',
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
